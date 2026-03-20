@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        String @id @default(cuid())
+  clerkId   String @unique
+  email     String @unique
+  firstName String?
+  lastName  String?
+  phone     String?
+  createdAt DateTime @default(now()) // member since sep 2025
+  updatedAt DateTime @updatedAt
+
+  // relationships
+  appointments Appointment[]
+  doctorProfile Doctor?
+
+  @@map("users")
+}
+
+model Doctor {
+  id              String   @id @default(cuid())
+  userId          String?  @unique
+  name            String
+  email           String   @unique
+  phone           String
+  speciality      String
+  bio             String?
+  imageUrl        String
+  gender          Gender
+  isActive        Boolean @default(true)
+  accountStatus   DoctorAccountStatus @default(PENDING_PAYMENT)
+  professionalActivatedAt DateTime?
+  clinicName      String?
+  clinicPhone     String?
+  clinicAddress   String?
+  clinicCity      String?
+  clinicState     String?
+  clinicPostalCode String?
+  clinicCountry   String?
+  clinicLatitude  Float?
+  clinicLongitude Float?
+  clinicLicenseNumber String?
+  clinicLicenseState  String?
+  clinicLicenseExpiry DateTime?
+  licenseNumber   String?
+  licenseState    String?
+  licenseExpiry   DateTime?
+  npiNumber       String?
+  deaNumber       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // relationships
+  appointments Appointment[]
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  documents DoctorDocument[]
+
+  @@map("doctors")
+
+}
+
+model DoctorDocument {
+  id         String   @id @default(cuid())
+  doctorId   String
+  type       String
+  url        String
+  createdAt  DateTime @default(now())
+
+  doctor     Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("doctor_documents")
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+  date        DateTime
+  time        String // store time as string i.e. 14:30
+  duration    Int               @default(30) // duration in minutes
+  status      AppointmentStatus @default(PENDING)
+  notes       String?
+  reason      String? // reason for appointment - teeth cleaning? emergency visit? etc.
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // foreign keys
+  userId String
+  doctorId String
+
+  // relationships
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("appointments")
+}
+
+model ChatSession {
+  id        String       @id @default(uuid())
+  userId    String
+  createdAt DateTime     @default(now())
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id         String      @id @default(uuid())
+  session    ChatSession @relation(fields: [sessionId], references: [id])
+  sessionId  String
+  role       String      // 'user' | 'assistant'
+  content    String
+  createdAt  DateTime    @default(now())
+}
+
+
+model Payment {
+  id        String   @id @default(cuid())
+  userId    String
+  phone     String
+  amount    Int
+  plan      String
+  method    PaymentMethod @default(MOBILE_MONEY)
+  purpose   PaymentPurpose @default(PLAN_SUBSCRIPTION)
+  status    String   @default("PENDING")
+  commissionRate Float?
+  commissionAmount Int?
+  netAmount Int?
+  createdAt DateTime @default(now())
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum AppointmentStatus {
+ PENDING
+ ACCEPTED
+ REJECTED
+ COMPLETED
+ CANCELLED
+}
+
+enum PaymentMethod {
+ MOBILE_MONEY
+ BANK
+ CARD
+}
+
+enum PaymentPurpose {
+ PLAN_SUBSCRIPTION
+ DOCTOR_PRO_ACCOUNT
+}
+
+enum DoctorAccountStatus {
+  PENDING_PAYMENT
+  ACTIVE
+  SUSPENDED
+}
+

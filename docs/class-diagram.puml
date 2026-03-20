@@ -1,0 +1,145 @@
+@startuml
+title DentWise Platform - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+' === Base Class ===
+abstract class BaseEntity {
+  +id: String
+  +createdAt: DateTime
+  +updatedAt: DateTime
+}
+
+' === Core Entities ===
+class User {
+  +clerkId: String
+  +email: String
+  +firstName: String?
+  +lastName: String?
+  +phone: String?
+}
+
+class Doctor {
+  +userId: String?
+  +name: String
+  +email: String
+  +phone: String
+  +speciality: String
+  +imageUrl: String
+  +gender: Gender
+  +accountStatus: DoctorAccountStatus
+  +professionalActivatedAt: DateTime?
+  +clinicName: String?
+  +clinicPhone: String?
+  +clinicAddress: String?
+  +clinicCity: String?
+  +clinicState: String?
+  +clinicPostalCode: String?
+  +clinicCountry: String?
+  +clinicLatitude: Float?
+  +clinicLongitude: Float?
+  +clinicLicenseNumber: String?
+  +clinicLicenseState: String?
+  +clinicLicenseExpiry: DateTime?
+  +licenseNumber: String?
+  +licenseState: String?
+  +licenseExpiry: DateTime?
+  +npiNumber: String?
+  +deaNumber: String?
+}
+
+class DoctorDocument {
+  +doctorId: String
+  +type: String
+  +url: String
+  +createdAt: DateTime
+}
+
+class Appointment {
+  +userId: String
+  +doctorId: String
+  +date: DateTime
+  +time: String
+  +duration: Int
+  +status: AppointmentStatus
+  +reason: String?
+  +notes: String?
+}
+
+class ChatSession {
+  +userId: String
+}
+
+class ChatMessage {
+  +sessionId: String
+  +role: String
+  +content: String
+  +createdAt: DateTime
+}
+
+class Payment {
+  +userId: String
+  +phone: String
+  +amount: Int
+  +plan: String
+  +method: PaymentMethod
+  +purpose: PaymentPurpose
+  +status: String
+}
+
+' === Enums ===
+enum AppointmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  MOBILE_MONEY
+  BANK
+  CARD
+}
+
+enum PaymentPurpose {
+  PLAN_SUBSCRIPTION
+  DOCTOR_PRO_ACCOUNT
+}
+
+enum DoctorAccountStatus {
+  PENDING_PAYMENT
+  ACTIVE
+  SUSPENDED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+' === Inheritance ===
+BaseEntity <|-- User
+BaseEntity <|-- Doctor
+BaseEntity <|-- Appointment
+BaseEntity <|-- ChatSession
+BaseEntity <|-- ChatMessage
+BaseEntity <|-- Payment
+BaseEntity <|-- DoctorDocument
+
+' === Associations ===
+User "1" -- "0..*" Appointment : books
+Doctor "1" -- "0..*" Appointment : receives
+User "1" -- "0..*" Payment : makes
+User "1" -- "0..*" ChatSession : starts
+User "0..1" -- "0..1" Doctor : profile
+
+' === Composition ===
+ChatSession "1" *-- "0..*" ChatMessage : contains
+Doctor "1" *-- "0..*" DoctorDocument : uploads
+
+' === Aggregation ===
+Doctor "1" o-- "0..*" Appointment : manages
+
+@enduml

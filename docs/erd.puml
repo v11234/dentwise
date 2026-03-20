@@ -1,0 +1,115 @@
+@startuml
+title DentWise ER Diagram
+
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+
+entity "User" as User {
+  * id : String <<PK>>
+  --
+  clerkId : String
+  email : String
+  firstName : String?
+  lastName : String?
+  phone : String?
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+entity "Doctor" as Doctor {
+  * id : String <<PK>>
+  --
+  userId : String? <<FK>>
+  name : String
+  email : String
+  phone : String
+  speciality : String
+  imageUrl : String
+  gender : Gender
+  accountStatus : DoctorAccountStatus
+  professionalActivatedAt : DateTime?
+  clinicName : String?
+  clinicPhone : String?
+  clinicAddress : String?
+  clinicCity : String?
+  clinicState : String?
+  clinicPostalCode : String?
+  clinicCountry : String?
+  clinicLatitude : Float?
+  clinicLongitude : Float?
+  clinicLicenseNumber : String?
+  clinicLicenseState : String?
+  clinicLicenseExpiry : DateTime?
+  licenseNumber : String?
+  licenseState : String?
+  licenseExpiry : DateTime?
+  npiNumber : String?
+  deaNumber : String?
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+entity "DoctorDocument" as DoctorDocument {
+  * id : String <<PK>>
+  --
+  doctorId : String <<FK>>
+  type : String
+  url : String
+  createdAt : DateTime
+}
+
+entity "Appointment" as Appointment {
+  * id : String <<PK>>
+  --
+  userId : String <<FK>>
+  doctorId : String <<FK>>
+  date : DateTime
+  time : String
+  duration : Int
+  status : AppointmentStatus
+  reason : String?
+  notes : String?
+  createdAt : DateTime
+  updatedAt : DateTime
+}
+
+entity "ChatSession" as ChatSession {
+  * id : String <<PK>>
+  --
+  userId : String <<FK>>
+  createdAt : DateTime
+}
+
+entity "ChatMessage" as ChatMessage {
+  * id : String <<PK>>
+  --
+  sessionId : String <<FK>>
+  role : String
+  content : String
+  createdAt : DateTime
+}
+
+entity "Payment" as Payment {
+  * id : String <<PK>>
+  --
+  userId : String <<FK>>
+  phone : String
+  amount : Int
+  plan : String
+  method : PaymentMethod
+  purpose : PaymentPurpose
+  status : String
+  createdAt : DateTime
+}
+
+' Relationships (Crow's Foot)
+User ||--o{ Appointment : books
+Doctor ||--o{ Appointment : receives
+User ||--o{ ChatSession : starts
+ChatSession ||--o{ ChatMessage : contains
+User ||--o{ Payment : makes
+Doctor ||--o{ DoctorDocument : uploads
+User o|--o| Doctor : profile
+
+@enduml
